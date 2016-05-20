@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>定高瀑布流-数组数据</title>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .main {
+        width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .main:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+    
+    .main ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .main li {
+        float: left;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        transition: all ease 0.5;
+        overflow: hidden;
+    }
+    
+    .main img {
+        border: none;
+        height: 100%;
+        height: 200px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="main" id="main">
+        <ul>
+            <!-- <li><a href="#"><img src="img/1.jpg"/></a></li> -->
+        </ul>
+    </div>
+    <script src="http://cdn.bootcss.com/jquery/1.12.1/jquery.js"></script>
+    <script>
+    var _ImageHeight_ = 200;
+    var imgdata = [{
+        "src": "img/1.jpg",
+        "alt": "图片1"
+    }, {
+        "src": "img/2.jpg",
+        "alt": "图片2"
+    }, {
+        "src": "img/3.jpg",
+        "alt": "图片3"
+    }, {
+        "src": "img/4.jpg",
+        "alt": "图片4"
+    }, {
+        "src": "img/5.jpg",
+        "alt": "图片5"
+    }, {
+        "src": "img/6.jpg",
+        "alt": "图片6"
+    }, {
+        "src": "img/7.jpg",
+        "alt": "图片7"
+    }, {
+        "src": "img/8.jpg",
+        "alt": "图片8"
+    }, {
+        "src": "img/9.jpg",
+        "alt": "图片9"
+    }, {
+        "src": "img/10.jpg",
+        "alt": "图片10"
+    }, {
+        "src": "img/11.jpg",
+        "alt": "图片11"
+    }];
+
+    function initimg(data, num) {
+        var str = "";
+        var len = data.length;
+        var index = 0;
+        for (var i = 0; i < num; i++) {
+            index = index == len ? 0 : index;
+            str += "<li style='height:" + _ImageHeight_ + "px;'><a href='javascript:'><img src='" + data[index].src + "' alt='" + data[index].alt + "'/></a></li>";
+            index++;
+        }
+        $("#main ul").html($("#main ul").html() + str);
+    }
+
+    function showImg() {
+
+        var liarr = $("#main").find("li");
+        liarr = Array.prototype.slice.call(liarr);
+        var mainW = $("#main").width();
+        var rliarr = [],
+            rw = 0;
+        for (var i = 0, len = liarr.length; i < len; i++) {
+
+            var liw = $(liarr[i]).outerWidth(true);
+            rw += liw;
+
+            if (rw <= mainW) {
+                rliarr.push(liarr[i]);
+            } else {
+
+                var needW = mainW - (rw - liw); //去掉最后一个，还差多少达到main的宽度
+
+                var d = Math.round(needW / rliarr.length);
+                var total = 0;
+                for (var j = 0; j < rliarr.length; j++) {
+
+                    var marginWt = parseInt($(rliarr[j]).css("margin-left")) + parseInt($(rliarr[j]).css("margin-right"));
+
+
+                    var w2 = $(rliarr[j]).width() + d - marginWt;
+                    var imgEl = $(rliarr[j]).find("img").eq(0);
+
+                    total += $(rliarr[j]).width() + d;
+
+                    if (w2 > imgEl.width()) {
+                        imgEl.css({
+                            "width": w2 + "px",
+                            "height": "auto"
+                        });
+                    }
+                    $(rliarr[j]).width(w2);
+
+                }
+                rw = $(liarr[i]).outerWidth(true);
+
+                rliarr.length = 0;
+                rliarr.push(liarr[i]);
+            }
+
+        }
+        // $("#main ul").css("visibility","visible");
+    }
+
+    var throttle = function(fn, interval) {
+        //函数节流
+        var _self = fn,
+            time, firsttime = true;
+
+        return function() {
+            var that = this;
+            var args = arguments;
+            if (firsttime) {
+                _self.apply(that, args);
+                firsttime = false;
+                return;
+            } else {
+                if (time) {
+                    return;
+                } else {
+
+                    time = setTimeout(function() {
+                        clearTimeout(time);
+                        time = null;
+                        _self.apply(that, args);
+
+                    }, interval || 500);
+                }
+            }
+        }
+
+    }
+
+    $(window).trigger("resize"); //触发事件 
+    $(window).bind("resize", throttle(function() {
+        initimg(imgdata, 40);
+
+
+        setTimeout(showImg, 100);
+    }, 500));
+
+    $(window).trigger("resize"); //触发事件
+
+    $(window).bind("scroll", throttle(function() {
+
+         if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+
+            initimg(imgdata, 20);
+            setTimeout(showImg, 100);
+
+         }
+      
+    },500));
+
+    
+    </script>
+</body>
+
+</html>
