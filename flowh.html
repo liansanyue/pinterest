@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>定高瀑布流-跨域请求</title>
+    <style>
+    body {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .main {
+        width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .main:after {
+        content: "";
+        display: block;
+        clear: both;
+    }
+    
+    .main ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .main li {
+        float: left;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        overflow: hidden;
+    }
+    
+    .main img {
+        border: none;
+        height: 100%;
+        min-height: 200px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="main" id="main">
+        <ul>
+            <!-- <li><a href="#"><img src="img/1.jpg"/></a></li> -->
+        </ul>
+    </div>
+    <script src="http://cdn.bootcss.com/jquery/1.12.1/jquery.js"></script>
+    <script>
+    var _ImageHeight_ = 200;
+    var imgdata = [];
+    var urlindex = 0;
+
+    function init(imglen) {
+
+        //搜狗图片
+        var urlimg = "http://pic.sogou.com/pics/channel/getAllRecomPicByTag.jsp?category=%E6%98%8E%E6%98%9F&tag=%E5%85%A8%E9%83%A8&&start=" + urlindex + "&len=" + imglen;
+
+        urlindex += imglen;
+        console.log("get:" + urlimg);
+        ajaxget(urlimg);
+
+    }
+
+    function initImg(data, begin) {
+        var str = "";
+        var len = data.length;
+        console.log("total:" + data.length);
+        for (var i = begin; i < len; i++) {
+            if (data[i].pic_url) {
+                str += "<li style='height:" + _ImageHeight_ + "px;'><a href='javascript:'><img src='" + data[i].pic_url + "' alt='" + data[i].title + "'/></a></li>";
+            }
+            i++;
+        }
+        $("#main ul").append(str);
+        setTimeout(showImg, 100);
+    }
+
+    function showImg() {
+
+        var liarr = $("#main").find("li");
+        liarr = Array.prototype.slice.call(liarr);
+        var mainW = $("#main").width();
+        var rliarr = [],
+            rw = 0;
+        for (var i = 0, len = liarr.length; i < len; i++) {
+
+            var liw = $(liarr[i]).outerWidth(true);
+            rw += liw;
+
+            if (rw <= mainW) {
+                rliarr.push(liarr[i]);
+            } else {
+
+                var needW = mainW - (rw - liw); //去掉最后一个，还差多少达到main的宽度
+
+                var d = Math.round(needW / rliarr.length);
+                var total = 0;
+                for (var j = 0; j < rliarr.length; j++) {
+
+                    var marginWt = parseInt($(rliarr[j]).css("margin-left")) + parseInt($(rliarr[j]).css("margin-right"));
+
+                    var w2 = $(rliarr[j]).width() + d - marginWt;
+                    var imgEl = $(rliarr[j]).find("img").eq(0);
+
+                    total += $(rliarr[j]).width() + d;
+
+                    if (w2 > imgEl.width()) {
+                        imgEl.css({
+                            "width": w2 + "px",
+                            "height": "auto"
+                        });
+                    }
+                    $(rliarr[j]).width(w2);
+
+                }
+                rw = $(liarr[i]).outerWidth(true);
+
+                rliarr.length = 0;
+                rliarr.push(liarr[i]);
+            }
+
+        }
+
+    }
+
+    var throttle = function(fn, interval) {
+        //函数节流
+        var _self = fn,
+            time, firsttime = true;
+
+        return function() {
+            var that = this;
+            var args = arguments;
+            if (firsttime) {
+                _self.apply(that, args);
+                firsttime = false;
+                return;
+            } else {
+                if (time) {
+                    return;
+                } else {
+
+                    time = setTimeout(function() {
+                        clearTimeout(time);
+                        time = null;
+                        _self.apply(that, args);
+
+                    }, interval || 500);
+                }
+            }
+        }
+
+    }
+
+
+    window.onload = function() {
+        $(window).bind("scroll", throttle(function() {
+
+            if ($(window).scrollTop() + $(window).height() >= $(document).height()) {
+                init(40);
+            }
+        }, 500));
+    }
+
+    function ajaxget(url) {
+        $.ajax({
+            url: url,
+
+            type: "get",
+            dataType: "jsonp",
+            jsonp: 'callback',
+            jsonpCallback: "getCallback",
+            success: function(imgdata) {
+
+                console.log(imgdata);
+            }
+
+
+        })
+    }
+
+    function getCallback(data) {
+        var begin = imgdata.length;
+        imgdata = imgdata.concat(data.all_items)
+        initImg(imgdata, begin);
+    }
+
+    init(40); //初始加载
+    </script>
+</body>
+
+</html>
