@@ -73,9 +73,9 @@ function checkscrollside(parentid,boxclass){
 	    }else{
 	 	    var boxs=getClassObj(parent,boxclass);
         }
-    var lastBoxHeight=boxs[boxs.length-1].offsetTop+Math.floor(boxs[boxs.length-1].offsetHeight/2);//创建【触发添加块框函数waterfall()】的高度：最后一个块框的距离网页顶部+自身高的一半(实现未滚到底就开始加载)
+    var lastBoxHeight=boxs[boxs.length-1].offsetTop+Math.floor(boxs[boxs.length-1].offsetHeight/2);//创建【触发添加块框函数)】的高度：最后一个块框的距离网页顶部+自身高的一半(实现未滚到底就开始加载)
     var scrollTop=document.documentElement.scrollTop||document.body.scrollTop;//注意解决兼容性
     var documentH=document.documentElement.clientHeight;//页面高度
-    return (lastBoxHeight<scrollTop+documentH)?true:false;//到达指定高度后 返回true，触发waterfall()函数
+    return (lastBoxHeight<scrollTop+documentH)?true:false;//到达指定高度后 返回true，触发函数
 }
  
